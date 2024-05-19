@@ -1,3 +1,5 @@
+"""Module used for logging"""
+
 import logging
 import sys
 from enum import Enum
@@ -15,7 +17,8 @@ try:
     from rich.logging import RichHandler
 
     # If successful, append RichHandler to handlers list
-    log_handlers.append(RichHandler(console=Console(stderr=True), show_time=False))
+    rich_handler = RichHandler(console=Console(stderr=True), show_time=False)
+    log_handlers.append(rich_handler)
 except ImportError:
     # If import fails, append StreamHandler to handlers list
     log_handlers.append(logging.StreamHandler(sys.stderr))
@@ -45,13 +48,19 @@ logger = logging.getLogger("textembed")
 
 
 # Define an Enum for uvicorn log levels
-class UVICORN_LOG_LEVELS(Enum):
+class UvicornLogLevels(Enum):
+    """Uvicorn log levels
+
+    Args:
+        Enum (str): Enum
+
+    Returns:
+        str: Log levels
+    """
+
     CRITICAL = "critical"
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
     DEBUG = "debug"
     TRACE = "trace"
-
-    def to_int(self) -> int:
-        return LOG_LEVELS[self.name]

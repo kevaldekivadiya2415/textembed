@@ -1,38 +1,109 @@
+"""Pydantic models"""
+
 import time
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 
-class ModelInfo(BaseModel):
+class HealthCheck(BaseModel):
+    """Health check response model.
+
+    Attributes:
+        payload (Optional[Union[str, int, float, dict, list]], optional): Payload data of any type.
+        message (Optional[str], optional): Message associated with the health check.
+        code (Optional[int], optional): Status code for the health check.
+    """
+
+    payload: Optional[Union[str, int, float, dict, list]] = None
+    message: Optional[str] = None
+    code: Optional[int] = None
+
+
+class Root(BaseModel):
+    """Root response model.
+
+    Attributes:
+        payload (Optional[Union[str, int, float, dict, list]], optional): Payload data of any type.
+        message (Optional[str], optional): Message associated with the root response.
+        code (Optional[int], optional): Status code for the root response.
+    """
+
+    payload: Optional[Union[str, int, float, dict, list]] = None
+    message: Optional[str] = None
+    code: Optional[int] = None
+
+
+class ModelDetails(BaseModel):
+    """Details of a model.
+
+    Attributes:
+        id (str): Unique identifier for the model.
+        object (str): Type of the object, default is "model".
+        owned_by (str): Owner of the model, default is "textembed".
+        created (int): Timestamp when the model details were created.
+    """
+
     id: str
-    stats: Dict[str, Any]
     object: str = "model"
     owned_by: str = "textembed"
     created: int = Field(default_factory=lambda: int(time.time()))
 
 
-class OpenAIModelInfo(BaseModel):
-    data: List[ModelInfo]
+class ModelList(BaseModel):
+    """List of model details objects.
+
+    Attributes:
+        data (List[ModelDetails]): List of model details objects.
+        object (str): Type of the object, default is "list".
+    """
+
+    data: List[ModelDetails]
     object: str = "list"
 
 
 class EmbeddingRequest(BaseModel):
+    """Request for embedding text data.
+
+    Attributes:
+        input (List[str]): List of input sentences to be embedded.
+        model (Optional[str], optional): Model to be used for embedding.
+        user (Optional[str], optional): User making the request.
+    """
+
     input: List[str]
-    model: Union[str, None] = None
+    model: Optional[str] = None
     user: Optional[str] = None
 
 
-class _EmbeddingObject(BaseModel):
+class EmbeddingData(BaseModel):
+    """Embedding data containing the embedding vector and index.
+
+    Attributes:
+        object (Literal["embedding"]): Type of the object, default is "embedding".
+        embedding (List[Union[float, int]]): Embedding vector.
+        index (int): Index of the embedding in the input list.
+    """
+
     object: Literal["embedding"] = "embedding"
-    embedding: list[float]
+    embedding: List[Union[float, int]]
     index: int
 
 
-class OpenAIEmbeddingRequest(BaseModel):
+class EmbeddingResponse(BaseModel):
+    """Response containing embedding data in OpenAI format.
+
+    Attributes:
+        object (Literal["embedding"]): Type of the object, default is "embedding".
+        data (List[EmbeddingData]): List of embedding data objects.
+        model (str): Model used for generating embeddings.
+        id (str): Unique identifier for the request, default is a UUID4 string prefixed with "textembed".
+        created (int): Timestamp when the request was created.
+    """
+
     object: Literal["embedding"] = "embedding"
-    data: list[_EmbeddingObject]
+    data: List[EmbeddingData]
     model: str
     id: str = Field(default_factory=lambda: f"textembed-{uuid4()}")
     created: int = Field(default_factory=lambda: int(time.time()))

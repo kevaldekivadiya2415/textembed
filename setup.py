@@ -31,7 +31,7 @@ def main():
         version=get_version(),
         author="Keval",
         author_email="kevaldekivadiya2415@gmail.com",
-        description="Text embed inference",
+        description="TextEmbed inference",
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
         keywords=["Embedding"],
