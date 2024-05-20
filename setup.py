@@ -39,6 +39,14 @@ def get_requires():
         return lines
 
 
+FASTAPI_DESCRIPTION = (
+    "TextEmbed provides a robust and scalable REST API for generating vector embeddings from text. "
+    "Built for performance and flexibility, it supports various sentence-transformer models, allowing "
+    "users to easily integrate state-of-the-art NLP techniques into their applications. Whether you need "
+    "embeddings for search, recommendation, or other NLP tasks, TextEmbed delivers with high efficiency."
+)
+
+
 def main():
     """
     Main function to setup the package using setuptools.
@@ -48,12 +56,12 @@ def main():
         version=get_version(),
         author="Keval Dekivadiya",
         author_email="kevaldekivadiya2415@gmail.com",
-        description="TextEmbed inference",
+        description=FASTAPI_DESCRIPTION,
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
         keywords=["Embedding"],
         license="Apache License 2.0",
-        url="",
+        url="https://github.com/kevaldekivadiya2415/textembed",
         package_dir={"": "src"},
         packages=find_packages("src"),
         python_requires=">=3.10.0",

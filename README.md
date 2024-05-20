@@ -49,5 +49,5 @@ Ensure you have Python 3.10 or higher installed. You will also need to install t
 
 ### Accessing the API
 
-Once the server is running, you can access the API documentation via Swagger UI at:
+Once the server is running, you can access the API documentation via Swagger UI.
 
