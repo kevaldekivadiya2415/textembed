@@ -71,7 +71,7 @@ def main():
         python_requires=">=3.11.0",
         install_requires=get_requires(),
         classifiers=[
-            "Development Status :: 1 - Beta",
+            "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
             "Intended Audience :: Education",
             "Intended Audience :: Science/Research",
