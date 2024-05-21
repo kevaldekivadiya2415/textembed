@@ -47,6 +47,18 @@ Ensure you have Python 3.10 or higher installed. You will also need to install t
     python3 -m textembed.server --help
     ```
 
+### Running with Docker (Recommended)
+You can also run TextEmbed using Docker. The Docker image is available on Docker Hub.
+```bash
+docker run keval2415/textembed:0.0.1 --help
+```
+This command will show the help message for the TextEmbed server, detailing the available options and usage.
+
+For Example:
+```bash
+docker run -p 8000:8000 keval2415/textembed:0.0.1 --model sentence-transformers/all-MiniLM-L6-v2 --port 8000
+```
+
 ### Accessing the API
 
 Once the server is running, you can access the API documentation via Swagger UI.
