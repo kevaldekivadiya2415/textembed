@@ -5,6 +5,8 @@ import re
 
 from setuptools import find_packages, setup
 
+this_directory = os.path.abspath(os.path.dirname(__file__))
+
 
 def get_version():
     """
@@ -29,7 +31,9 @@ def get_requires():
     Returns:
         list: A list of dependency strings.
     """
-    with open("requirements.txt", "r", encoding="utf-8") as f:
+    with open(
+        os.path.join(this_directory, "requirements.txt"), "r", encoding="utf-8"
+    ) as f:
         file_content = f.read()
         lines = [
             line.strip()
@@ -64,17 +68,15 @@ def main():
         url="https://github.com/kevaldekivadiya2415/textembed",
         package_dir={"": "src"},
         packages=find_packages("src"),
-        python_requires=">=3.10.0",
+        python_requires=">=3.11.0",
         install_requires=get_requires(),
         classifiers=[
-            "Development Status :: 4 - Beta",
+            "Development Status :: 1 - Beta",
             "Intended Audience :: Developers",
             "Intended Audience :: Education",
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: Apache Software License",
             "Operating System :: OS Independent",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Topic :: Scientific/Engineering :: Artificial Intelligence",
