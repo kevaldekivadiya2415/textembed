@@ -1,6 +1,5 @@
 """Sentence Transformers"""
 
-import asyncio
 from typing import Any, Dict, List
 
 import numpy as np
@@ -59,7 +58,7 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
             out_features = self.forward(features)["sentence_embedding"]
         return out_features
 
-    async def postprocess(self, out_features: Tensor) -> np.ndarray:
+    async def postprocess(self, out_features: Tensor) -> List[np.ndarray]:
         """Postprocesses the raw embeddings to the final format.
 
         Args:
@@ -72,20 +71,6 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
             embeddings = out_features.detach().cpu().numpy()
         return embeddings
 
-    async def _generate_embedding_for_sentence(self, sentence: str) -> np.ndarray:
-        """Helper function to generate embedding for a single sentence.
-
-        Args:
-            sentence (str): A single input sentence to generate embedding for.
-
-        Returns:
-            np.ndarray: Generated embedding for the sentence.
-        """
-        features = await self.preprocess([sentence])
-        out_features = await self.core_process(features)
-        embedding = await self.postprocess(out_features)
-        return embedding[0]
-
     async def generate_embeddings(self, sentences: List[str]) -> List[np.ndarray]:
         """Generates embeddings for the input sentences.
 
@@ -95,9 +80,8 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
         Returns:
             List[np.ndarray]: Generated embeddings.
         """
-        tasks = [
-            asyncio.create_task(self._generate_embedding_for_sentence(sentence))
-            for sentence in sentences
-        ]
-        embeddings = await asyncio.gather(*tasks)
+        features = await self.preprocess(sentences)
+        out_features = await self.core_process(features)
+        embeddings = await self.postprocess(out_features)
+
         return embeddings
