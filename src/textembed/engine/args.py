@@ -1,5 +1,6 @@
 """Engine arguments"""
 
+import multiprocessing
 from dataclasses import dataclass
 from typing import Optional
 
@@ -11,14 +12,33 @@ class AsyncEngineArgs:
     Attributes:
         model (str): The path or identifier of the model to be used by the engine.
         served_model_name (Optional[str]): An optional name to be used for serving the model.
-                                            If not provided, it is derived from the last two segments of the model path.
+                                           If not provided, it is derived from the last two segments of the model path.
         trust_remote_code (bool): Whether to trust remote code.
+        workers (int): The number of worker tasks to process requests. Defaults to the number of CPU cores.
+        batch_size (int): The maximum number of requests to process in a single batch.
+                          Must be greater than or equal to 1.
     """
 
     model: str
     served_model_name: Optional[str] = None
     trust_remote_code: bool = True
+    workers: int = multiprocessing.cpu_count()
+    batch_size: int = 32
 
     def __post_init__(self):
+        # If served_model_name is not provided, derive it from the model path
         if self.served_model_name is None:
-            self.served_model_name = "/".join(self.model.split("/")[-2:])
+            # Split the model path and take the last two segments to form the served_model_name
+            segments = self.model.split("/")
+            if len(segments) >= 2:
+                self.served_model_name = "/".join(segments[-2:])
+            else:
+                self.served_model_name = segments[-1] if segments else "default_model"
+
+        # Ensure the batch size is valid
+        if self.batch_size < 1:
+            raise ValueError("Batch size must be greater than or equal to 1.")
+
+        # Ensure the number of workers is valid
+        if self.workers < 1:
+            raise ValueError("Number of workers must be greater than or equal to 1.")

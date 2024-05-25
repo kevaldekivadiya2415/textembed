@@ -2,8 +2,7 @@
 
 from typing import List
 
-import numpy as np
-
+from textembed.batch import BatchProcessor
 from textembed.engine.args import AsyncEngineArgs
 from textembed.executor.embedder.sentence_transformer import SentenceTransformerEmbedder
 from textembed.log import logger
@@ -18,6 +17,8 @@ class AsyncEngine:
     Attributes:
         engine_args (AsyncEngineArgs): Arguments required to initialize the engine.
         running (bool): Flag indicating if the engine is currently running.
+        batch_processor (BatchProcessor): Processor for handling batch requests.
+        model (SentenceTransformerEmbedder): Model for generating embeddings.
     """
 
     def __init__(self, engine_args: AsyncEngineArgs) -> None:
@@ -29,6 +30,7 @@ class AsyncEngine:
         """
         self._engine_args = engine_args
         self.running = False
+        self.batch_processor = None
         self.model = None
 
     @classmethod
@@ -46,13 +48,20 @@ class AsyncEngine:
     async def start(self):
         """Start the engine.
 
-        This method sets the running flag to True, indicating that the engine
-        is active and ready to process requests.
+        This method initializes the model and batch processor, and sets the
+        running flag to True, indicating that the engine is active and ready
+        to process requests.
         """
         if self.running:
             logger.warning("The engine is already running.")
+            return
 
-        self.model = SentenceTransformerEmbedder(engine_args=self.engine_args)
+        self.model = SentenceTransformerEmbedder(engine_args=self._engine_args)
+        self.batch_processor = BatchProcessor(
+            model=self.model,
+            workers=self._engine_args.workers,
+            batch_size=self._engine_args.batch_size,
+        )
         self.running = True
         logger.info("Engine started.")
 
@@ -67,6 +76,8 @@ class AsyncEngine:
         """
         self._check_running()
         self.running = False
+        if self.batch_processor is not None:
+            await self.batch_processor.shutdown()
         logger.info("Engine stopped.")
 
     def _check_running(self):
@@ -93,7 +104,7 @@ class AsyncEngine:
         """
         return self._engine_args
 
-    async def aembed(self, sentences: List[str]) -> List[np.ndarray]:
+    async def aembed(self, sentences: List[str], future):
         """Asynchronously embed a list of sentences.
 
         This method processes the input sentences using the underlying engine.
@@ -101,10 +112,12 @@ class AsyncEngine:
 
         Args:
             sentences (List[str]): List of sentences to be embedded.
+            future (asyncio.Future): A future object to set the result of embeddings.
 
         Raises:
             ValueError: If the engine is not running when this method is called.
         """
         self._check_running()
-        embeddings = await self.model.generate_embeddings(sentences=sentences)
-        return embeddings
+        if self.batch_processor is None:
+            raise ValueError("Batch processor is not initialized.")
+        await self.batch_processor.add_request(sentences, future)

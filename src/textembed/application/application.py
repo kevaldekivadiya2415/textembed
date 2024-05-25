@@ -39,10 +39,10 @@ def create_application(
                 port=doc_extra.get("port", 8000),
             )
         )
-        app.state.engine = AsyncEngine.from_args(engine_args=engine_args)
-        await app.state.engine.start()
+        app.state.async_engine = AsyncEngine.from_args(engine_args=engine_args)
+        await app.state.async_engine.start()
         yield
-        await app.state.engine.stop()
+        await app.state.async_engine.stop()
 
     app = FastAPI(
         title=docs.FASTAPI_TITLE,
