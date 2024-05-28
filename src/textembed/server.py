@@ -46,6 +46,12 @@ def start_application(
         int,
         typer.Option(help="The batch size for processing requests."),
     ] = 32,
+    embedding_dtype: Annotated[
+        str,
+        typer.Option(
+            help="The data type for the embeddings. Choose from 'binary', 'int8', 'float16', or 'float32'. Default is 'float32'."
+        ),
+    ] = "float32",
 ):
     """
     Starts the application with the specified configuration.
@@ -58,6 +64,7 @@ def start_application(
         port (int): The port number on which the application will run.
         workers (int): The number of worker processes.
         batch_size (int): The batch size for processing requests.
+        embedding_dtype (str): The data type for the embeddings. Choose from 'binary', 'int8', 'float16', or 'float32
     """
     engine_args = AsyncEngineArgs(
         model=model,
@@ -65,6 +72,7 @@ def start_application(
         trust_remote_code=trust_remote_code,
         workers=workers if workers is not None else multiprocessing.cpu_count(),
         batch_size=batch_size,
+        embedding_dtype=embedding_dtype,
     )
 
     app = create_application(

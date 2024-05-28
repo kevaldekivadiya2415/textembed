@@ -17,6 +17,7 @@ class AsyncEngineArgs:
         workers (int): The number of worker tasks to process requests. Defaults to the number of CPU cores.
         batch_size (int): The maximum number of requests to process in a single batch.
                           Must be greater than or equal to 1.
+        embedding_dtype(str): Embedding data type for final generate embedding.
     """
 
     model: str
@@ -24,6 +25,7 @@ class AsyncEngineArgs:
     trust_remote_code: bool = True
     workers: int = multiprocessing.cpu_count()
     batch_size: int = 32
+    embedding_dtype: str = "float32"
 
     def __post_init__(self):
         # If served_model_name is not provided, derive it from the model path
