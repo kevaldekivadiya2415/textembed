@@ -1,56 +1,74 @@
 """Base class for embeddings creation"""
 
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Dict, List, Tuple
+
+import numpy as np
+from torch import Tensor
 
 
 class BaseEmbedder(ABC):
-    """Abstract base class for transformer models.
+    """Abstract base class for embedding models.
 
-    This class outlines the required methods and properties for a transformer model.
+    This class outlines the required methods and properties for an embedding model.
     It includes methods for preprocessing, core processing, postprocessing, and generating embeddings.
     """
 
     @abstractmethod
-    async def preprocess(self, sentences: List[str]) -> Any:
-        """Preprocesses input sentences for tokenization and feature preparation.
+    async def preprocess(
+        self, sentences: List[str]
+    ) -> Tuple[Dict[str, Tensor], List[int]]:
+        """Tokenize the input sentences.
 
         Args:
-            sentences (List[str]): List of sentences to be tokenized and prepared.
+            sentences (List[str]): List of sentences to be tokenized.
 
         Returns:
-            Any: Preprocessed data ready for the core encoding step.
+            Tuple[Dict[str, Tensor], List[int]]: Tokenized features and lengths of sentences
         """
 
     @abstractmethod
-    async def core_process(self, features: Any) -> Any:
-        """Runs the core processing step for the model, performing inference.
+    async def transfer_to_device(
+        self, features: Dict[str, Tensor]
+    ) -> Dict[str, Tensor]:
+        """Moves the tokenized features to the appropriate device.
 
         Args:
-            features (Any): The features prepared by the preprocessing step.
+            features (Dict[str, Tensor]): Tokenized features.
 
         Returns:
-            Any: The output features from the model process.
+            Dict[str, Tensor]: Features moved to the specified device.
         """
 
     @abstractmethod
-    async def postprocess(self, out_features: Any) -> Any:
-        """Postprocesses the output features from the inference step.
+    async def generate_embeddings(self, features: Dict[str, Tensor]) -> Tensor:
+        """Performs the forward pass to generate sentence embeddings.
 
         Args:
-            out_features (Any): The raw output features from the model.
+            features (Dict[str, Tensor]): Tokenized features moved to the device.
 
         Returns:
-            Any: Postprocessed data, typically converted to a desired format.
+            Tensor: Raw embeddings from the model.
         """
 
     @abstractmethod
-    async def generate_embeddings(self, sentences: List[str]) -> Any:
-        """Generates embeddings for the input sentences.
+    async def postprocess(self, out_features: Tensor) -> np.ndarray:
+        """Converts the output tensors to numpy arrays.
 
         Args:
-            sentences (Any): Input sentences to generate embeddings for.
+            out_features (Tensor): Raw embeddings from the model.
 
         Returns:
-            Any: Generated embeddings.
+            np.ndarray: Postprocessed embeddings in numpy array format.
+        """
+
+    @abstractmethod
+    async def process_batch(self, sentences: List[str]) -> Tuple[np.ndarray, List[int]]:
+        """Processes a batch of sentences to generate embeddings.
+
+        Args:
+            sentences (List[str]): List of sentences to be embedded.
+
+        Returns:
+            Tuple[np.ndarray, List[int]]: Generated embeddings and lengths of sentences.
         """

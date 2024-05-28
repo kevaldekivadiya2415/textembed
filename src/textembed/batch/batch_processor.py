@@ -72,12 +72,17 @@ class BatchProcessor:
                 futures = [req[1] for req in requests]
 
                 try:
-                    embeddings = await self.model.generate_embeddings(all_texts)
+                    embeddings, usage = await self.model.process_batch(all_texts)
                     # Split embeddings back to individual futures
                     idx = 0
                     for future, req in zip(futures, requests):
                         num_texts = len(req[0])
-                        future.set_result(embeddings[idx : idx + num_texts])
+                        future.set_result(
+                            (
+                                embeddings[idx : idx + num_texts],
+                                usage[idx : idx + num_texts],
+                            )
+                        )
                         idx += num_texts
                 except Exception as e:
                     for future in futures:

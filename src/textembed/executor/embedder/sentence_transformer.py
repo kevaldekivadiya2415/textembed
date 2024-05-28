@@ -1,6 +1,6 @@
 """Sentence Transformers"""
 
-from typing import Any, Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -9,6 +9,7 @@ from torch import Tensor
 
 from textembed.engine.args import AsyncEngineArgs
 from textembed.executor.base import BaseEmbedder
+from textembed.executor.primitives import EmbeddingDtype
 
 
 class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
@@ -30,58 +31,81 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
             device="cpu",
             trust_remote_code=engine_args.trust_remote_code,
         )
+        self.embedding_dtype = engine_args.embedding_dtype
         self.eval()
 
-    async def preprocess(self, sentences: List[str]) -> Any:
-        """Preprocesses input sentences for embedding.
+    async def preprocess(
+        self, sentences: List[str]
+    ) -> Tuple[Dict[str, Tensor], List[int]]:
+        """Tokenizes the input sentences.
 
         Args:
-            sentences (List[str]): List of sentences to be embedded.
+            sentences (List[str]): List of sentences to be tokenized.
 
         Returns:
-            Any: Tokenized features ready for core processing.
+            Tuple[Dict[str, Tensor], List[int]]: Tokenized features and lengths of sentences
         """
-        features = self.tokenize(sentences)
-        return features
+        tokenized = self.tokenize(sentences)
+        usage = [len(sentence) for sentence in sentences]
+        return tokenized, usage
 
-    async def core_process(self, features: Dict[str, Tensor]) -> Tensor:
-        """Runs the core embedding process on the input features.
+    async def transfer_to_device(
+        self, features: Dict[str, Tensor]
+    ) -> Dict[str, Tensor]:
+        """Moves the tokenized features to the appropriate device.
 
         Args:
             features (Dict[str, Tensor]): Tokenized features.
 
         Returns:
+            Dict[str, Tensor]: Features moved to the specified device.
+        """
+        return util.batch_to_device(features, self.device)
+
+    async def generate_embeddings(self, features: Dict[str, Tensor]) -> Tensor:
+        """Performs the forward pass to generate sentence embeddings.
+
+        Args:
+            features (Dict[str, Tensor]): Tokenized features moved to the device.
+
+        Returns:
             Tensor: Raw embeddings from the model.
         """
         with torch.inference_mode():
-            features = util.batch_to_device(features, self.device)
-            out_features = self.forward(features)["sentence_embedding"]
-        return out_features
+            return self.forward(features)["sentence_embedding"]
 
-    async def postprocess(self, out_features: Tensor) -> List[np.ndarray]:
-        """Postprocesses the raw embeddings to the final format.
+    async def postprocess(self, out_features: Tensor) -> np.ndarray:
+        """Converts the output tensors to numpy arrays of the specified data type.
 
         Args:
             out_features (Tensor): Raw embeddings from the model.
 
         Returns:
-            np.ndarray: Postprocessed embeddings in numpy array format.
+            np.ndarray: Postprocessed embeddings in the specified numpy array format.
         """
-        with torch.inference_mode():
-            embeddings = out_features.detach().cpu().numpy()
-        return embeddings
+        embeddings = out_features.detach().cpu().numpy()
+        if self.embedding_dtype == EmbeddingDtype.BINARY.value:
+            return (embeddings > 0).astype(np.uint8)
+        elif self.embedding_dtype == EmbeddingDtype.INT8.value:
+            return embeddings.astype(np.int8)
+        elif self.embedding_dtype == EmbeddingDtype.FLOAT16.value:
+            return embeddings.astype(np.float16)
+        elif self.embedding_dtype == EmbeddingDtype.FLOAT32.value:
+            return embeddings.astype(np.float32)
+        else:
+            raise ValueError(f"Unsupported dtype: {self.embedding_dtype}")
 
-    async def generate_embeddings(self, sentences: List[str]) -> List[np.ndarray]:
-        """Generates embeddings for the input sentences.
+    async def process_batch(self, sentences: List[str]) -> Tuple[np.ndarray, List[int]]:
+        """Processes a batch of sentences to generate embeddings.
 
         Args:
-            sentences (List[str]): Input sentences to generate embeddings for.
+            sentences (List[str]): List of sentences to be embedded.
 
         Returns:
-            List[np.ndarray]: Generated embeddings.
+            Tuple[np.ndarray, List[int]]: Generated embeddings and lengths of sentences.
         """
-        features = await self.preprocess(sentences)
-        out_features = await self.core_process(features)
+        features, lengths = await self.preprocess(sentences)
+        features = await self.transfer_to_device(features)
+        out_features = await self.generate_embeddings(features)
         embeddings = await self.postprocess(out_features)
-
-        return embeddings
+        return embeddings, lengths  # type: ignore

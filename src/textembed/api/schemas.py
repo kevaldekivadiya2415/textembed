@@ -77,6 +77,18 @@ class EmbeddingRequest(BaseModel):
     user: Optional[str] = None
 
 
+class Usage(BaseModel):
+    """Sentence prompt and total tokens
+
+    Attributes:
+        prompt_tokens (str): Count of prompt tokens.
+        total_tokens (str): Count of total tokens.
+    """
+
+    prompt_tokens: int
+    total_tokens: int
+
+
 class EmbeddingData(BaseModel):
     """Embedding data containing the embedding vector and index.
 
@@ -88,6 +100,7 @@ class EmbeddingData(BaseModel):
 
     object: Literal["embedding"] = "embedding"
     embedding: List[Union[float, int]]
+    usage: Usage
     index: int
 
 

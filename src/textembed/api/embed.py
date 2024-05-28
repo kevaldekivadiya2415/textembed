@@ -13,6 +13,7 @@ from textembed.api.schemas import (
     EmbeddingResponse,
     ModelDetails,
     ModelList,
+    Usage,
 )
 from textembed.engine.args import AsyncEngineArgs
 from textembed.engine.async_engine import AsyncEngine
@@ -70,8 +71,8 @@ async def create_embedding(
     # Generate embeddings
     loop = asyncio.get_running_loop()
     future = loop.create_future()
-    await async_engine.aembed(sentences=embed_request.input, future=future)
-    embeddings = await future
+    await async_engine.aembed(sentences=embed_request.input, future=future)  # type: ignore
+    results = await future
 
     logger.info(
         "Received request with %d inputs. Processed in %.4f ms",
@@ -79,11 +80,17 @@ async def create_embedding(
         (time.perf_counter() - start_time) * 1000,
     )
 
+    embeddings = results[0]
+    usage = results[1]
     embedding_data = [
         EmbeddingData(
             object="embedding",
             embedding=emb,
             index=count,
+            usage=Usage(
+                prompt_tokens=usage[count],
+                total_tokens=usage[count],
+            ),
         )
         for count, emb in enumerate(embeddings)
     ]
