@@ -20,7 +20,7 @@ Ensure you have Python 3.11 or higher installed. You will also need to install t
 
 1. Install the required dependencies:
     ```bash
-    pip install -r requirements.txt
+    pip install -U textembed
     ```
 
 2. Start the TextEmbed server with your desired model:
