@@ -8,6 +8,11 @@ on:
     types:
       - published
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (optional)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -23,25 +28,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract release tag
+      - name: Extract release tag from event
         if: github.event_name == 'release'
         id: extract_release_tag
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
+      - name: Set release tag from input
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag != ''
+        run: echo "RELEASE_TAG=${{ github.event.inputs.release_tag }}" >> $GITHUB_ENV
+
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/your-image-name:latest .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/textembed:latest .
 
       - name: Tag Docker image with release tag
-        if: github.event_name == 'release'
+        if: env.RELEASE_TAG
         run: |
-          docker tag ${{ secrets.DOCKER_USERNAME }}/your-image-name:latest ${{ secrets.DOCKER_USERNAME }}/your-image-name:${{ env.RELEASE_TAG }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/textembed:latest ${{ secrets.DOCKER_USERNAME }}/textembed:${{ env.RELEASE_TAG }}
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/your-image-name:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/textembed:latest
 
       - name: Push Docker image with release tag
-        if: github.event_name == 'release'
+        if: env.RELEASE_TAG
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/your-image-name:${{ env.RELEASE_TAG }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/textembed:${{ env.RELEASE_TAG }}
