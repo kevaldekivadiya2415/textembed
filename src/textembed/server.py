@@ -7,6 +7,7 @@ import typer
 import uvicorn
 from typing_extensions import Annotated
 
+from textembed.api.errors import EmbeddingException, embedding_exception_handler
 from textembed.application.application import create_application
 from textembed.engine.args import AsyncEngineArgs
 
@@ -79,6 +80,10 @@ def start_application(
         engine_args=engine_args,
         doc_extra={"host": host, "port": port},
     )
+
+    # Handle Errors
+    app.add_exception_handler(EmbeddingException, embedding_exception_handler)  # type: ignore
+
     uvicorn.run(app, host=host, port=port, log_level="error")
 
 
