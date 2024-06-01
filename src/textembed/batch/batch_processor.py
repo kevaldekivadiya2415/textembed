@@ -45,6 +45,12 @@ class BatchProcessor:
         self.worker_tasks = [
             self.loop.create_task(self.batch_processor(i)) for i in range(workers)
         ]
+        # Wait until all worker tasks are started
+        self.loop.create_task(self._log_workers_started())
+
+    async def _log_workers_started(self):
+        await asyncio.sleep(0)  # Yield control to ensure workers have started
+        logger.info("All %d workers started.", self.workers)
 
     async def batch_processor(self, worker_id: int):
         """Worker task that processes requests from the queue in batches.

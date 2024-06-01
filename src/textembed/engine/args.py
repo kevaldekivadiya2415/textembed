@@ -12,7 +12,7 @@ class AsyncEngineArgs:
     Attributes:
         model (str): The path or identifier of the model to be used by the engine.
         served_model_name (Optional[str]): An optional name to be used for serving the model.
-                                           If not provided, it is derived from the last two segments of the model path.
+                                            Default is `model` name
         trust_remote_code (bool): Whether to trust remote code.
         workers (int): The number of worker tasks to process requests. Defaults to the number of CPU cores.
         batch_size (int): The maximum number of requests to process in a single batch.
@@ -30,12 +30,7 @@ class AsyncEngineArgs:
     def __post_init__(self):
         # If served_model_name is not provided, derive it from the model path
         if self.served_model_name is None:
-            # Split the model path and take the last two segments to form the served_model_name
-            segments = self.model.split("/")
-            if len(segments) >= 2:
-                self.served_model_name = "/".join(segments[-2:])
-            else:
-                self.served_model_name = segments[-1] if segments else "default_model"
+            self.served_model_name = self.model
 
         # Ensure the batch size is valid
         if self.batch_size < 1:

@@ -68,7 +68,7 @@ def main():
         url="https://github.com/kevaldekivadiya2415/textembed",
         package_dir={"": "src"},
         packages=find_packages("src"),
-        python_requires=">=3.11.0",
+        python_requires=">=3.10.0",
         install_requires=get_requires(),
         classifiers=[
             "Development Status :: 4 - Beta",
@@ -77,6 +77,7 @@ def main():
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: Apache Software License",
             "Operating System :: OS Independent",
+            "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
             "Topic :: Scientific/Engineering :: Artificial Intelligence",

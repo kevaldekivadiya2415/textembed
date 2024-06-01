@@ -65,6 +65,9 @@ class AsyncEngine:
         self.running = True
         logger.info("Engine started.")
 
+        # Warm-up the model
+        await self.model.warm_up()
+
     async def stop(self):
         """Stop the engine.
 

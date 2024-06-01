@@ -39,13 +39,15 @@ class ModelDetails(BaseModel):
     """Details of a model.
 
     Attributes:
-        id (str): Unique identifier for the model.
+        id (str): Model name or id.
+        served_model_name (str): Served model name, default is "".
         object (str): Type of the object, default is "model".
         owned_by (str): Owner of the model, default is "textembed".
         created (int): Timestamp when the model details were created.
     """
 
     id: str
+    served_model_name: str = None # type: ignore
     object: str = "model"
     owned_by: str = "textembed"
     created: int = Field(default_factory=lambda: int(time.time()))
