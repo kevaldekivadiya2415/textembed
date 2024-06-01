@@ -34,6 +34,12 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
         self.embedding_dtype = engine_args.embedding_dtype
         self.eval()
 
+    async def warm_up(self) -> None:
+        """Warm up the model by performing a dummy inference."""
+        sample_sentences = ["This is a sample sentence."] * 10
+        # Perform inference
+        await self.process_batch(sample_sentences)
+
     async def preprocess(
         self, sentences: List[str]
     ) -> Tuple[Dict[str, Tensor], List[int]]:
