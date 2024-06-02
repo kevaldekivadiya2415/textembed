@@ -4,6 +4,8 @@ import multiprocessing
 from dataclasses import dataclass
 from typing import Optional
 
+from textembed.executor.primitives import EmbeddingDtype
+
 
 @dataclass
 class AsyncEngineArgs:
@@ -39,3 +41,9 @@ class AsyncEngineArgs:
         # Ensure the number of workers is valid
         if self.workers < 1:
             raise ValueError("Number of workers must be greater than or equal to 1.")
+
+        if self.embedding_dtype not in [dtype.value for dtype in EmbeddingDtype]:
+            raise ValueError(
+                f"Unsupported embedding dtype: '{self.embedding_dtype}'. "
+                f"Valid dtype are: {[dtype.value for dtype in EmbeddingDtype]}."
+            )

@@ -13,11 +13,9 @@ class EmbeddingDtype(Enum):
     Attributes:
         FLOAT32 (str): Represents 32-bit floating point embeddings.
         FLOAT16 (str): Represents 16-bit floating point embeddings.
-        INT8 (str): Represents 8-bit integer embeddings.
         BINARY (str): Represents binary embeddings.
     """
 
     FLOAT32 = "float32"
     FLOAT16 = "float16"
-    INT8 = "int8"
     BINARY = "binary"
