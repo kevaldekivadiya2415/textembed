@@ -89,11 +89,9 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
         Returns:
             np.ndarray: Postprocessed embeddings in the specified numpy array format.
         """
-        embeddings = out_features.detach().cpu().numpy()
+        embeddings: np.ndarray = out_features.detach().cpu().numpy()
         if self.embedding_dtype == EmbeddingDtype.BINARY.value:
             return (embeddings > 0).astype(np.uint8)
-        elif self.embedding_dtype == EmbeddingDtype.INT8.value:
-            return embeddings.astype(np.int8)
         elif self.embedding_dtype == EmbeddingDtype.FLOAT16.value:
             return embeddings.astype(np.float16)
         elif self.embedding_dtype == EmbeddingDtype.FLOAT32.value:
