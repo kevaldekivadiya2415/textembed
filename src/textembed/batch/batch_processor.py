@@ -65,7 +65,7 @@ class BatchProcessor:
             try:
                 while len(requests) < self.batch_size:
                     request = await asyncio.wait_for(
-                        self.request_queue.get(), timeout=0.05
+                        self.request_queue.get(), timeout=0.005
                     )
                     requests.append(request)
             except asyncio.TimeoutError:

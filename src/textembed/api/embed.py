@@ -2,6 +2,7 @@
 
 import asyncio
 import time
+from typing import List
 from uuid import uuid4
 
 from fastapi import APIRouter, Request, status
@@ -18,6 +19,7 @@ from textembed.api.schemas import (
 )
 from textembed.engine.args import AsyncEngineArgs
 from textembed.engine.async_engine import AsyncEngine
+from textembed.engine.async_engine_array import AsyncEngineArray
 from textembed.log import logger
 
 embed_router = APIRouter(prefix="/v1", tags=["Embedding"])
@@ -38,13 +40,16 @@ async def get_models(request: Request) -> ModelList:
     Returns:
         ModelList: A list of available embedding models.
     """
-    engine_args: AsyncEngineArgs = request.app.state.async_engine.engine_args
+    async_engine_args_list: List[AsyncEngineArgs] = (
+        request.app.state.async_engine_array.engine_args
+    )
     return ModelList(
         data=[
             ModelDetails(
                 id=engine_args.model,
                 served_model_name=engine_args.served_model_name,  # type: ignore
             )
+            for engine_args in async_engine_args_list
         ]
     )
 
@@ -68,16 +73,22 @@ async def create_embedding(
     Returns:
         EmbeddingResponse: The response containing embedding data.
     """
-    async_engine: AsyncEngine = request.app.state.async_engine
-    async_engine_args = async_engine.engine_args
+    # Directly retrieve the AsyncEngineArgs from AsyncEngineArray
+    async_engine_array: AsyncEngineArray = request.app.state.async_engine_array
+    async_engine_args_list: List[AsyncEngineArgs] = async_engine_array.engine_args
 
-    # Check model
-    if embed_request.model != async_engine_args.served_model_name:
+    # Check if the requested model is in the engine arguments
+    if embed_request.model not in [
+        engine_args.model for engine_args in async_engine_args_list
+    ]:
         raise ModelNotFoundException(
             message=f"The requested model `{embed_request.model}` was not found. "
             f"Please ensure that you have specified the correct model name. "
-            f"Currently served model is `{async_engine_args.served_model_name}`."
+            f"Currently served models `{[engine_args.model for engine_args in async_engine_args_list]}`."
         )
+
+    # Get engine for the requested model
+    engine: AsyncEngine = async_engine_array[embed_request.model]  # type: ignore
 
     # Ensure input
     if isinstance(embed_request.input, str):
@@ -88,7 +99,7 @@ async def create_embedding(
     # Generate embeddings
     loop = asyncio.get_running_loop()
     future = loop.create_future()
-    await async_engine.aembed(sentences=embed_request.input, future=future)  # type: ignore
+    await engine.aembed(sentences=embed_request.input, future=future)  # type: ignore
     results = await future
 
     logger.info(
@@ -115,7 +126,7 @@ async def create_embedding(
     response = EmbeddingResponse(
         object="embedding",
         data=embedding_data,
-        model=async_engine.engine_args.model,
+        model=embed_request.model,
         id=f"textembed-{uuid4()}",
         created=int(time.time()),
     )

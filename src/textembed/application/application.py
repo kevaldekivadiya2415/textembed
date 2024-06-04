@@ -1,6 +1,7 @@
 """Application configuration"""
 
 from contextlib import asynccontextmanager
+from typing import List
 
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -10,12 +11,12 @@ from textembed.api import docs
 from textembed.api.embed import embed_router
 from textembed.api.monitor import monitor_router
 from textembed.engine.args import AsyncEngineArgs
-from textembed.engine.async_engine import AsyncEngine
+from textembed.engine.async_engine_array import AsyncEngineArray
 from textembed.log import logger
 
 
 def create_application(
-    engine_args: AsyncEngineArgs,
+    engine_args_list: List[AsyncEngineArgs],
     doc_extra: dict,
 ) -> FastAPI:
     """_summary_
@@ -39,10 +40,12 @@ def create_application(
                 port=doc_extra.get("port", 8000),
             )
         )
-        app.state.async_engine = AsyncEngine.from_args(engine_args=engine_args)
-        await app.state.async_engine.start()
+        app.state.async_engine_array = AsyncEngineArray.from_args(
+            engine_args_list=engine_args_list
+        )
+        await app.state.async_engine_array.start_all()
         yield
-        await app.state.async_engine.stop()
+        await app.state.async_engine_array.stop_all()
 
     app = FastAPI(
         title=docs.FASTAPI_TITLE,

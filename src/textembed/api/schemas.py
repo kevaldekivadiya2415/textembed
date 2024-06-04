@@ -47,7 +47,7 @@ class ModelDetails(BaseModel):
     """
 
     id: str
-    served_model_name: str = None # type: ignore
+    served_model_name: str = None  # type: ignore
     object: str = "model"
     owned_by: str = "textembed"
     created: int = Field(default_factory=lambda: int(time.time()))
@@ -70,12 +70,12 @@ class EmbeddingRequest(BaseModel):
 
     Attributes:
         input (List[str]): List of input sentences to be embedded.
-        model (Optional[str], optional): Model to be used for embedding.
+        model str: Model to be used for embedding.
         user (Optional[str], optional): User making the request.
     """
 
     input: List[str]
-    model: Optional[str] = None
+    model: str
     user: Optional[str] = None
 
 
