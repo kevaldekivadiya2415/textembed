@@ -2,6 +2,7 @@
 
 import multiprocessing
 import warnings
+from typing import Union
 
 import typer
 import uvicorn
@@ -14,22 +15,25 @@ from textembed.engine.args import AsyncEngineArgs
 # Filter out all warnings
 warnings.filterwarnings("ignore")
 
+# Initialize Typer app
 app_typer = typer.Typer()
 
 
 @app_typer.command()
 def start_application(
-    model: Annotated[
+    models: Annotated[
         str,
-        typer.Option(help="The name or path of the Huggingface model to be used."),
-    ] = "sentence-transformers/all-MiniLM-L6-v2",
-    served_model_name: Annotated[
-        str,
-        typer.Option(help="The name under which the model will be served."),
-    ] = "",
+        typer.Option(help="Comma-separated list of Huggingface models to be used."),
+    ] = "sentence-transformers/all-MiniLM-L6-v2, sentence-transformers/all-MiniLM-L12-v2",
+    served_model_names: Annotated[
+        Union[str, None],
+        typer.Option(
+            help="Comma-separated list of names under which the models will be served."
+        ),
+    ] = None,
     trust_remote_code: Annotated[
         bool,
-        typer.Option(help="Whether to trust remote code when loading the model."),
+        typer.Option(help="Whether to trust remote code when loading the models."),
     ] = True,
     host: Annotated[
         str,
@@ -58,32 +62,51 @@ def start_application(
     Starts the application with the specified configuration.
 
     Args:
-        model (str): The name or path of the Huggingface model to be used.
-        served_model_name (str): The name under which the model will be served.
-        trust_remote_code (bool): Whether to trust remote code when loading the model.
+        models (str): Comma-separated list of Huggingface models to be used.
+        served_model_names (str): Comma-separated list of names under which the models will be served.
+        trust_remote_code (bool): Whether to trust remote code when loading the models.
         host (str): The host address on which the application will run.
         port (int): The port number on which the application will run.
         workers (int): The number of worker processes.
         batch_size (int): The batch size for processing requests.
-        embedding_dtype (str): The data type for the embeddings. Choose from 'binary', 'float16', or 'float32
+        embedding_dtype (str): The data type for the embeddings. Choose from 'binary', 'float16', or 'float32'.
     """
-    engine_args = AsyncEngineArgs(
-        model=model,
-        served_model_name=served_model_name or None,  # Set to None if empty string
-        trust_remote_code=trust_remote_code,
-        workers=workers if workers is not None else multiprocessing.cpu_count(),
-        batch_size=batch_size,
-        embedding_dtype=embedding_dtype,
-    )
 
+    # Split the models and served model names
+    models_list = models.split(",")
+    if served_model_names is None:
+        served_model_names_list = models_list
+    else:
+        served_model_names_list = served_model_names.split(",")
+
+    if len(models_list) != len(served_model_names_list):
+        raise ValueError(
+            "The number of models must match the number of served model names."
+        )
+
+    # Create a list of AsyncEngineArgs instances
+    engine_args_list = []
+    for idx, model in enumerate(models_list):
+        engine_args = AsyncEngineArgs(
+            model=model.strip(),
+            served_model_name=served_model_names_list[idx].strip(),
+            trust_remote_code=trust_remote_code,
+            workers=workers if workers is not None else multiprocessing.cpu_count(),
+            batch_size=batch_size,
+            embedding_dtype=embedding_dtype,
+        )
+        engine_args_list.append(engine_args)
+
+    # Create the application
     app = create_application(
-        engine_args=engine_args,
+        engine_args_list=engine_args_list,
         doc_extra={"host": host, "port": port},
     )
 
     # Handle Errors
     HandleExceptions(app=app)
 
+    # Run the application
     uvicorn.run(app, host=host, port=port, log_level="error")
 
 

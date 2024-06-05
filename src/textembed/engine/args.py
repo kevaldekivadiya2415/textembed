@@ -2,7 +2,7 @@
 
 import multiprocessing
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from textembed.executor.primitives import EmbeddingDtype
 
@@ -23,7 +23,7 @@ class AsyncEngineArgs:
     """
 
     model: str
-    served_model_name: Optional[str] = None
+    served_model_name: Optional[Union[str, None]]
     trust_remote_code: bool = True
     workers: int = multiprocessing.cpu_count()
     batch_size: int = 32

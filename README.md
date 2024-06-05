@@ -1,3 +1,12 @@
+[![Contributors](https://img.shields.io/github/contributors/kevaldekivadiya2415/textembed.svg)](https://github.com/kevaldekivadiya2415/textembed/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/kevaldekivadiya2415/textembed.svg)](https://github.com/kevaldekivadiya2415/textembed/issues)
+[![Apache License 2.0](https://img.shields.io/github/license/kevaldekivadiya2415/textembed.svg)](https://github.com/kevaldekivadiya2415/textembed/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/kevaldekivadiya2415/textembed/branch/main/graph/badge.svg?token=your_token_here)](https://codecov.io/gh/kevaldekivadiya2415/textembed)
+[![Downloads](https://img.shields.io/pypi/dm/textembed.svg)](https://pypi.org/project/textembed/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/kevaldekivadiya/textembed.svg)](https://hub.docker.com/r/kevaldekivadiya/textembed)
+
+
+
 # TextEmbed - Embedding Inference Server
 
 TextEmbed is a high-throughput, low-latency REST API designed for serving vector embeddings. It supports a wide range of sentence-transformer models and frameworks, making it suitable for various applications in natural language processing.
@@ -9,12 +18,14 @@ TextEmbed is a high-throughput, low-latency REST API designed for serving vector
 - **Scalable:** Easily integrates into larger systems and scales with demand.
 - **Batch Processing:** Supports batch processing for better and faster inference.
 - **OpenAI Compatible REST API Endpoint:** Provides an OpenAI compatible REST API endpoint.
+- **Single Line Command Deployment:** Deploy multiple models via a single command for efficient deployment.
+- **Support for Embedding Formats:** Supports binary, float16, and float32 embeddings formats for faster retrieval.
 
 ## Getting Started
 
 ### Prerequisites
 
-Ensure you have Python 3.11 or higher installed. You will also need to install the required dependencies.
+Ensure you have Python 3.10 or higher installed. You will also need to install the required dependencies.
 
 ### Installation
 
@@ -23,30 +34,11 @@ Ensure you have Python 3.11 or higher installed. You will also need to install t
     pip install -U textembed
     ```
 
-2. Start the TextEmbed server with your desired model:
+2. Start the TextEmbed server with your desired models:
     ```bash
-    python3 -m textembed.server --model <Model Name>
+    python3 -m textembed.server --models <Model1>, <Model2> --port <Port>
     ```
 
-    Replace `<Model Name>` with the name of the model you want to use.
+    Replace `<Model1>` and `<Model2>` with the names of the models you want to use, separated by commas. Replace `<Port>` with the port number on which you want to run the server.
 
-3. For more information and additional options, run:
-    ```bash
-    python3 -m textembed.server --help
-    ```
-
-### Running with Docker (Recommended)
-You can also run TextEmbed using Docker. The Docker image is available on Docker Hub.
-```bash
-docker run kevaldekivadiya/textembed:latest --help
-```
-This command will show the help message for the TextEmbed server, detailing the available options and usage.
-
-For Example:
-```bash
-docker run -p 8000:8000 kevaldekivadiya/textembed:latest --model sentence-transformers/all-MiniLM-L6-v2 --port 8000
-```
-
-### Accessing the API
-
-Once the server is running, you can access the API documentation via Swagger UI.
+For more information about the Docker deployment and configuration, please refer to the documentation [setup.md](docs/setup.md).
