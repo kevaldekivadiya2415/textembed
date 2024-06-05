@@ -63,7 +63,7 @@ class AsyncEngine:
             batch_size=self._engine_args.batch_size,
         )
         self.running = True
-        logger.info("Engine started.")
+        logger.info("Engine started for the %s model.", self._engine_args.model)
 
         # Warm-up the model
         await self.model.warm_up()
@@ -81,7 +81,7 @@ class AsyncEngine:
         self.running = False
         if self.batch_processor is not None:
             await self.batch_processor.shutdown()
-        logger.info("Engine stopped.")
+        logger.info("Engine stopped for the %s model.", self._engine_args.model)
 
     def _check_running(self):
         """Check if the engine is running.

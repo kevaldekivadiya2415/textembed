@@ -50,7 +50,11 @@ class BatchProcessor:
 
     async def _log_workers_started(self):
         await asyncio.sleep(0)  # Yield control to ensure workers have started
-        logger.info("All %d workers started.", self.workers)
+        logger.info(
+            "All %d workers have started batch processing for the %s model.",
+            self.workers,
+            self.model.engine_args.model,
+        )
 
     async def batch_processor(self, worker_id: int):
         """Worker task that processes requests from the queue in batches.
@@ -58,14 +62,18 @@ class BatchProcessor:
         Args:
             worker_id (int): The identifier for the worker task.
         """
-        logger.info("Worker %d started.", worker_id)
+        logger.debug(
+            "Worker with ID %d has started batch processing for the %s model.",
+            worker_id,
+            self.model.engine_args.model,
+        )
         while True:
             start_time = time.perf_counter()
             requests = []
             try:
                 while len(requests) < self.batch_size:
                     request = await asyncio.wait_for(
-                        self.request_queue.get(), timeout=0.005
+                        self.request_queue.get(), timeout=0.05
                     )
                     requests.append(request)
             except asyncio.TimeoutError:

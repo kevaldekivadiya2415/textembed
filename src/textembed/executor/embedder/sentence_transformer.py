@@ -32,6 +32,7 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
             trust_remote_code=engine_args.trust_remote_code,
         )
         self.embedding_dtype = engine_args.embedding_dtype
+        self.engine_args = engine_args
         self.eval()
 
     async def warm_up(self) -> None:

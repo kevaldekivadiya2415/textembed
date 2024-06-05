@@ -1,4 +1,4 @@
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from textembed.engine.args import AsyncEngineArgs
 from textembed.engine.async_engine import AsyncEngine
