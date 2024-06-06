@@ -3,6 +3,8 @@
 [![Apache License 2.0](https://img.shields.io/github/license/kevaldekivadiya2415/textembed.svg)](https://github.com/kevaldekivadiya2415/textembed/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/textembed)](https://pepy.tech/project/textembed)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kevaldekivadiya/textembed.svg)](https://hub.docker.com/r/kevaldekivadiya/textembed)
+[![PyPI - Version](https://img.shields.io/pypi/v/textembed)](https://pypi.org/project/textembed/)
+
 
 
 
