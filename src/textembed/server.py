@@ -57,6 +57,12 @@ def start_application(
             help="The data type for the embeddings. Choose from 'binary', 'float16', or 'float32'. Default is 'float32'."
         ),
     ] = "float32",
+    api_key: Annotated[
+        Union[str, None],
+        typer.Option(
+            help="Your API key for authentication. Make sure to keep it secure. Do not share it with others."
+        ),
+    ] = None,
 ):
     """
     Starts the application with the specified configuration.
@@ -70,6 +76,7 @@ def start_application(
         workers (int): The number of worker processes.
         batch_size (int): The batch size for processing requests.
         embedding_dtype (str): The data type for the embeddings. Choose from 'binary', 'float16', or 'float32'.
+        api_key Union[str, None]: Your API key for authentication. Make sure to keep it secure. Do not share it with others.
     """
 
     # Split the models and served model names
@@ -101,6 +108,7 @@ def start_application(
     app = create_application(
         engine_args_list=engine_args_list,
         doc_extra={"host": host, "port": port},
+        api_key=api_key,
     )
 
     # Handle Errors
