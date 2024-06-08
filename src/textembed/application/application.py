@@ -1,7 +1,7 @@
 """Application configuration"""
 
 from contextlib import asynccontextmanager
-from typing import List
+from typing import List, Union
 
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -18,12 +18,14 @@ from textembed.log import logger
 def create_application(
     engine_args_list: List[AsyncEngineArgs],
     doc_extra: dict,
+    api_key: Union[str, None] = None,
 ) -> FastAPI:
-    """_summary_
+    """Crate FastAPI Application
 
     Args:
         engine_args (AsyncEngineArgs): Async engine arguments
         doc_extra (dict): Dict of host and port.
+        api_key (Union(str, None)): Api key.
 
     Returns:
         FastAPI: FastAPI application
@@ -43,6 +45,8 @@ def create_application(
         app.state.async_engine_array = AsyncEngineArray.from_args(
             engine_args_list=engine_args_list
         )
+        app.state.api_key = api_key
+
         await app.state.async_engine_array.start_all()
         yield
         await app.state.async_engine_array.stop_all()

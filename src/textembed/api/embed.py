@@ -5,9 +5,10 @@ import time
 from typing import List
 from uuid import uuid4
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import ORJSONResponse
 
+from textembed.api.dependencies import valid_token_dependency
 from textembed.api.errors import ModelNotFoundException
 from textembed.api.schemas import (
     EmbeddingData,
@@ -59,6 +60,7 @@ async def get_models(request: Request) -> ModelList:
     response_class=ORJSONResponse,
     response_model=EmbeddingResponse,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(valid_token_dependency)],  # type: ignore
 )
 async def create_embedding(
     request: Request, embed_request: EmbeddingRequest
@@ -73,6 +75,7 @@ async def create_embedding(
     Returns:
         EmbeddingResponse: The response containing embedding data.
     """
+
     # Directly retrieve the AsyncEngineArgs from AsyncEngineArray
     async_engine_array: AsyncEngineArray = request.app.state.async_engine_array
     async_engine_args_list: List[AsyncEngineArgs] = async_engine_array.engine_args
