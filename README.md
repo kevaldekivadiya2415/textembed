@@ -4,7 +4,8 @@
 [![Downloads](https://static.pepy.tech/badge/textembed)](https://pepy.tech/project/textembed)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kevaldekivadiya/textembed.svg)](https://hub.docker.com/r/kevaldekivadiya/textembed)
 [![PyPI - Version](https://img.shields.io/pypi/v/textembed)](https://pypi.org/project/textembed/)
-
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kevaldekivadiya2415_textembed&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kevaldekivadiya2415_textembed)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kevaldekivadiya2415_textembed&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=kevaldekivadiya2415_textembed)
 
 
 

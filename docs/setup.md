@@ -32,6 +32,7 @@ Ensure you have Python 3.10 or higher installed on your machine. You will also n
     - --workers: `<NumberOfWorkers>`: The number of worker processes for batch processing.
     - --batch_size: `<BatchSize>`: The batch size for processing requests.
     - --embedding_dtype: `<EmbeddingDtype>`: The data type for the embeddings. Choose from 'binary', 'float16', or 'float32'.
+    - --api_key: `<APIKey>`: Your API key for authentication. Make sure to keep it secure. Do not share it with others.
 
 ## Running with Docker (Recommended)
 
