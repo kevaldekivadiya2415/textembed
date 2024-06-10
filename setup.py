@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 this_directory = os.path.abspath(os.path.dirname(__file__))
 
 
-def get_version():
+def get_version() -> str:
     """
     Reads the version of the package from the __init__.py file.
 
@@ -18,9 +18,12 @@ def get_version():
     with open(
         os.path.join("src", "textembed", "__init__.py"), "r", encoding="utf-8"
     ) as f:
+        version = ""
         file_content = f.read()
-        pattern = r"__version__\W*=\W*\"([^\"]+)\""
-        (version,) = re.findall(pattern, file_content)
+        pattern = r'__version__ = "([^"]+)"'
+        match_group = re.search(pattern, file_content)
+        if match_group:
+            version = match_group.group(1)
         return version
 
 
@@ -63,7 +66,7 @@ def main():
         description=FASTAPI_DESCRIPTION,
         long_description=open("README.md", "r", encoding="utf-8").read(),
         long_description_content_type="text/markdown",
-        keywords=["Embedding"],
+        keywords=["Embedding", "RAG"],
         license="Apache License 2.0",
         url="https://github.com/kevaldekivadiya2415/textembed",
         package_dir={"": "src"},
