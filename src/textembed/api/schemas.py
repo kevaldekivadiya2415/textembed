@@ -47,7 +47,7 @@ class ModelDetails(BaseModel):
     """
 
     id: str
-    served_model_name: str = None  # type: ignore
+    served_model_name: str
     object: str = "model"
     owned_by: str = "textembed"
     created: int = Field(default_factory=lambda: int(time.time()))
