@@ -1,6 +1,6 @@
 """Sentence Transformers"""
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -43,17 +43,21 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
 
     async def preprocess(
         self, sentences: List[str]
-    ) -> Tuple[Dict[str, Tensor], List[int]]:
+    ) -> Tuple[Dict[str, Tensor], List[Union[int, str]]]:
         """Tokenizes the input sentences.
 
         Args:
             sentences (List[str]): List of sentences to be tokenized.
 
         Returns:
-            Tuple[Dict[str, Tensor], List[int]]: Tokenized features and lengths of sentences
+            Tuple[Dict[str, Tensor], List[Union[int, str]]: Tokenized features and lengths or shape of sentences
         """
         tokenized = self.tokenize(sentences)
-        usage = [len(sentence) for sentence in sentences]
+        usage = [
+            len(sentence) if isinstance(sentence, str) else str(sentence.size)
+            for sentence in sentences
+        ]
+
         return tokenized, usage
 
     async def transfer_to_device(
@@ -107,7 +111,7 @@ class SentenceTransformerEmbedder(SentenceTransformer, BaseEmbedder):
             sentences (List[str]): List of sentences to be embedded.
 
         Returns:
-            Tuple[np.ndarray, List[int]]: Generated embeddings and lengths of sentences.
+            Tuple[np.ndarray, List[int]]: Generated embeddings and lengths/shape of sentences.
         """
         features, lengths = await self.preprocess(sentences)
         features = await self.transfer_to_device(features)

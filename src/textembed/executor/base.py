@@ -1,7 +1,7 @@
 """Base class for embeddings creation"""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 from torch import Tensor
@@ -17,14 +17,14 @@ class BaseEmbedder(ABC):
     @abstractmethod
     async def preprocess(
         self, sentences: List[str]
-    ) -> Tuple[Dict[str, Tensor], List[int]]:
+    ) -> Tuple[Dict[str, Tensor], List[Union[int, str]]]:
         """Tokenize the input sentences.
 
         Args:
             sentences (List[str]): List of sentences to be tokenized.
 
         Returns:
-            Tuple[Dict[str, Tensor], List[int]]: Tokenized features and lengths of sentences
+            Tuple[Dict[str, Tensor], List[Union[int, str]]]: Tokenized features and lengths or shape of sentences
         """
 
     @abstractmethod

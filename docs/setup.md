@@ -61,3 +61,63 @@ This command will display the help message for the TextEmbed server, detailing t
 ## Accessing the API
 Once the server is running, you can access the API documentation via Swagger UI by navigating to `http://localhost:8000/docs` in your web browser.
 
+## Image Embedding Example
+
+With the added support for image models, such as the SentenceTransformer CLIP model ([`sentence-transformers/clip-ViT-B-32`](https://huggingface.co/sentence-transformers/clip-ViT-B-32)), you can now generate embeddings for images.
+
+### Steps to Generate Image Embeddings
+
+1. **Convert Image to Base64 String:**
+
+    ```python
+    import base64
+
+    def image_to_base64(image_path: str) -> str:
+        with open(image_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return encoded_string
+
+    image_path = '<IMAGE_PATH>'
+    base64_string = image_to_base64(image_path)
+    ```
+
+2. **Make a POST Request to the TextEmbed Server:**
+
+    ```python
+    import requests
+
+    resp = requests.post(url="http://0.0.0.0:8000/v1/image_embedding", json={
+      "input": [
+        base64_string
+      ],
+      "model": "sentence-transformers/clip-ViT-B-32",
+      "user": "string"
+    })
+
+    print(resp.json())
+    ```
+
+### Example Request and Response
+
+**Request:**
+
+```json
+{
+  "input": [
+    "<Base64EncodedImageString>"
+  ],
+  "model": "sentence-transformers/clip-ViT-B-32",
+  "user": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "embeddings": [
+    [0.1, 0.2, ..., 0.3]
+  ],
+  "model": "sentence-transformers/clip-ViT-B-32",
+  "user": "string"
+}
+```

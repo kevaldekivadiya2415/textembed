@@ -1,12 +1,15 @@
 """Embedding model apis"""
 
 import asyncio
+import base64
 import time
+from io import BytesIO
 from typing import List
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import ORJSONResponse
+from PIL import Image
 
 from textembed.api.dependencies import valid_token_dependency
 from textembed.api.errors import ModelNotFoundException
@@ -55,27 +58,19 @@ async def get_models(request: Request) -> ModelList:
     )
 
 
-@embed_router.post(
-    "/embedding",
-    response_class=ORJSONResponse,
-    response_model=EmbeddingResponse,
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(valid_token_dependency)],  # type: ignore
-)
-async def create_embedding(
-    request: Request, embed_request: EmbeddingRequest
-) -> EmbeddingResponse:
-    """Create embeddings for the given input text.
-
+async def get_engine(request: Request, embed_request: EmbeddingRequest):
+    """Retrieve the appropriate engine for the requested model.
     Args:
-        request (Request): The user request.
-        embed_request (EmbeddingRequest): The request containing input text
-                                        and optional model and user information.
+        request (Request): The HTTP request object containing the application state.
+        embed_request (EmbeddingRequest): The request object containing details
+                                          about the embedding, including the model name.
+
+    Raises:
+        ModelNotFoundException: If the specified model is not found in the available engines.
 
     Returns:
-        EmbeddingResponse: The response containing embedding data.
+        AsyncEngine: The engine corresponding to the requested model.
     """
-
     # Directly retrieve the AsyncEngineArgs from AsyncEngineArray
     async_engine_array: AsyncEngineArray = request.app.state.async_engine_array
     async_engine_args_list: List[AsyncEngineArgs] = async_engine_array.engine_args
@@ -93,24 +88,24 @@ async def create_embedding(
     # Get engine for the requested model
     engine: AsyncEngine = async_engine_array[embed_request.model]  # type: ignore
 
-    # Ensure input
-    if isinstance(embed_request.input, str):
-        embed_request.input = [embed_request.input]
+    return engine
 
-    start_time = time.perf_counter()
 
-    # Generate embeddings
-    loop = asyncio.get_running_loop()
-    future = loop.create_future()
-    await engine.aembed(sentences=embed_request.input, future=future)  # type: ignore
-    results = await future
+async def prepare_response(results: list, embed_request: EmbeddingRequest):
+    """
+    Prepare the response for the embedding request.
 
-    logger.info(
-        "Received request with %d inputs. Processed in %.4f ms",
-        len(embed_request.input),
-        (time.perf_counter() - start_time) * 1000,
-    )
+    Args:
+        results (list): A list containing the embeddings and their usage information.
+            - results[0] (list): A list of embeddings.
+            - results[1] (list): A list of usage data corresponding to each embedding.
+        embed_request (EmbeddingRequest): The request object containing details about the embedding, 
+                                          including the model name.
 
+    Returns:
+        EmbeddingResponse: The structured response containing the embeddings, usage data, 
+                           and other metadata.
+    """
     embeddings = results[0]
     usage = results[1]
     embedding_data = [
@@ -135,3 +130,96 @@ async def create_embedding(
     )
 
     return response
+
+
+@embed_router.post(
+    "/embedding",
+    response_class=ORJSONResponse,
+    response_model=EmbeddingResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(valid_token_dependency)],  # type: ignore
+)
+async def create_embedding(
+    request: Request, embed_request: EmbeddingRequest
+) -> EmbeddingResponse:
+    """Create embeddings for the given input text.
+
+    Args:
+        request (Request): The user request.
+        embed_request (EmbeddingRequest): The request containing input text
+                                        and optional model and user information.
+
+    Returns:
+        EmbeddingResponse: The response containing embedding data.
+    """
+    # Get engine for the requested model
+    engine: AsyncEngine = await get_engine(request=request, embed_request=embed_request)
+
+    # Ensure input
+    if isinstance(embed_request.input, str):
+        embed_request.input = [embed_request.input]
+
+    start_time = time.perf_counter()
+
+    # Generate embeddings
+    loop = asyncio.get_running_loop()
+    future = loop.create_future()
+    await engine.aembed(sentences=embed_request.input, future=future)  # type: ignore
+    results = await future
+
+    logger.info(
+        "Received request with %d inputs. Processed in %.4f ms",
+        len(embed_request.input),
+        (time.perf_counter() - start_time) * 1000,
+    )
+
+    return await prepare_response(results=results, embed_request=embed_request)
+
+
+@embed_router.post(
+    "/image_embedding",
+    response_class=ORJSONResponse,
+    response_model=EmbeddingResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(valid_token_dependency)],  # type: ignore
+)
+async def create_image_embedding(
+    request: Request, embed_request: EmbeddingRequest
+) -> EmbeddingResponse:
+    """Create embeddings for the given input base64 image.
+
+    Args:
+        request (Request): The user request.
+        embed_request (EmbeddingRequest): The request containing input base64 image
+                                        and optional model and user information.
+
+    Returns:
+        EmbeddingResponse: The response containing embedding data.
+    """
+    # Get engine for the requested model
+    engine: AsyncEngine = await get_engine(request=request, embed_request=embed_request)
+
+    # Ensure input
+    if isinstance(embed_request.input, str):
+        embed_request.input = [embed_request.input]
+
+    start_time = time.perf_counter()
+
+    image_input = [
+        Image.open(BytesIO(base64.b64decode(image))).convert("RGB")
+        for image in embed_request.input
+    ]
+
+    # Generate embeddings
+    loop = asyncio.get_running_loop()
+    future = loop.create_future()
+    await engine.aembed(sentences=image_input, future=future)  # type: ignore
+    results = await future
+
+    logger.info(
+        "Received request with %d inputs. Processed in %.4f ms",
+        len(embed_request.input),
+        (time.perf_counter() - start_time) * 1000,
+    )
+
+    return await prepare_response(results=results, embed_request=embed_request)
