@@ -1,0 +1,34 @@
+site_name: "TextEmbed: Embedding Inference Server"
+site_url: https://kevaldekivadiya2415.github.io/textembed/
+repo_url: https://github.com/kevaldekivadiya2415/textembed/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - content.code.select
+
+extra:
+  version:
+    provider: mike
+
+plugins:
+  - search
+  - swagger-ui-tag:
+      background: White
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Setup Guide: setup.md
+  - Swagger: swagger.md
+  - Search: search.md
+
