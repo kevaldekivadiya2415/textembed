@@ -28,6 +28,7 @@ jobs:
 
       - name: Build the documentation
         run: |
+          cd docs
           mkdocs build
 
       - name: Deploy to GitHub Pages
