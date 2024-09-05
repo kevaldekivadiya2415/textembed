@@ -3,7 +3,6 @@ name: docs-gh-pages
 on:
   release:
     types: [published]
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -15,44 +14,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-       - name: Checkout main
-         uses: actions/checkout@v4
-       
-       - name: Deploy docs
-         uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        # Or use mhausenblas/mkdocs-deploy-gh-pages@nomaterial to build without the mkdocs-material theme
-         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # CUSTOM_DOMAIN: optionaldomain.com
-          CONFIG_FILE: docs/mkdocs.yml
-          EXTRA_PACKAGES: build-base
-          GITHUB_DOMAIN: kevaldekivadiya2415.github.io/textembed
-          REQUIREMENTS: docs/requirements.txt
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: 3.11
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
 
-      # - uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 'latest'  # Install the latest version of Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'  # Install the latest version of Node.js
 
-      # - uses: actions/checkout@v4
-      #   with:
-      #     fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # - name: Install dependencies
-      #   run: |
-      #     pip install mkdocs mkdocs-swagger-ui-tag mkdocs-material
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-swagger-ui-tag mkdocs-material
 
-      # - name: Build the documentation
-      #   run: |
-      #     cd docs
-      #     mkdocs build
-      #     cd site
-      #     ls 
+      - name: Build the documentation
+        run: |
+          cd docs
+          mkdocs build
 
-      # - name: Deploy to GitHub Pages
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   run:  cd docs
-      #   publish_dir: site
-      #   github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_dir: site
+          github_token: ${{ secrets.GITHUB_TOKEN }}
