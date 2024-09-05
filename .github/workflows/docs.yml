@@ -14,29 +14,40 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
+       - name: Checkout main
+         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 'latest'  # Install the latest version of Node.js
+       - name: Deploy docs
+         uses: mhausenblas/mkdocs-deploy-gh-pages@master
+         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CONFIG_FILE: docs/mkdocs.yml
+          EXTRA_PACKAGES: build-base
+          REQUIREMENTS: docs/requirements.txt
+    # steps:
+    #   - uses: actions/setup-python@v5
+    #     with:
+    #       python-version: 3.11
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    #   - uses: actions/setup-node@v3
+    #     with:
+    #       node-version: 'latest'  # Install the latest version of Node.js
 
-      - name: Install dependencies
-        run: |
-          pip install mkdocs mkdocs-swagger-ui-tag mkdocs-material
+    #   - uses: actions/checkout@v4
+    #     with:
+    #       fetch-depth: 0
 
-      - name: Build the documentation
-        run: |
-          cd docs
-          mkdocs build
+    #   - name: Install dependencies
+    #     run: |
+    #       pip install mkdocs mkdocs-swagger-ui-tag mkdocs-material
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          publish_dir: site
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #   - name: Build the documentation
+    #     run: |
+    #       cd docs
+    #       mkdocs build
+
+    #   - name: Deploy to GitHub Pages
+    #     uses: peaceiris/actions-gh-pages@v3
+    #     with:
+    #       publish_dir: site
+    #       github_token: ${{ secrets.GITHUB_TOKEN }}
